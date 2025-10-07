@@ -1,0 +1,54 @@
+name: Deploy Vite Project to GitHub Pages
+
+on:
+  # Workflow akan berjalan setiap kali ada perubahan di branch 'main'
+  push:
+    branches:
+      - main
+  # Mengizinkan menjalankan workflow secara manual dari tab Actions
+  workflow_dispatch:
+
+# Memberikan izin yang diperlukan untuk Pages deployment
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Memastikan hanya satu deployment yang berjalan pada satu waktu
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  # Job untuk menjalankan build proyek
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Anda bisa ganti ke versi yang sesuai (misal: '18')
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build project
+        # Jalankan build. Hasilnya adalah folder 'dist'
+        run: npm run build
+      
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+      
+      - name: Upload build artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Folder 'dist' yang dibuat oleh npm run build akan diupload
+          path: './dist'
+          
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
